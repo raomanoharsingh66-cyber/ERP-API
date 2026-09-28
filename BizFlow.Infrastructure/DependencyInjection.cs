@@ -52,6 +52,9 @@ public static class DependencyInjection
         // Phase 7 Analytics & Audit Services
         services.AddScoped<IDashboardService, DashboardService>();
 
+        // AI Smart Purchase Assistant
+        services.AddScoped<IAiAssistantService, AiAssistantService>();
+
         return services;
     }
 }

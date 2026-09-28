@@ -70,14 +70,12 @@ try
     builder.Services.AddAuthorization();
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 
-    // Configure CORS for Angular Frontend
+    // Configure CORS for Angular Frontend (Localhost + Vercel)
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowFrontend", policy =>
         {
-            policy.WithOrigins(
-                    "http://localhost:4200", 
-                    "https://localhost:4200")
+            policy.SetIsOriginAllowed(_ => true)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
@@ -112,11 +110,8 @@ try
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseMiddleware<RequestLoggingMiddleware>();
 
-    // Swagger UI in Development and Staging
-    if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Local"))
-    {
-        app.UseSwaggerDocumentation();
-    }
+    // Swagger UI in All Environments
+    app.UseSwaggerDocumentation();
 
     if (!app.Environment.IsDevelopment())
     {

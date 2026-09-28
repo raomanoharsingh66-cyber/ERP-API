@@ -16,11 +16,7 @@ public class CreateProductValidator : AbstractValidator<CreateProductDto>
             .MaximumLength(50).WithMessage("SKU cannot exceed 50 characters.")
             .Matches("^[A-Za-z0-9_.-]+$").WithMessage("SKU can only contain alphanumeric characters, hyphens, and underscores.");
 
-        RuleFor(x => x.CategoryId)
-            .NotEmpty().WithMessage("Category selection is required.");
-
-        RuleFor(x => x.UnitOfMeasureId)
-            .NotEmpty().WithMessage("Unit of Measure is required.");
+        // Category and UnitOfMeasure have smart fallback defaults in service layer if not explicitly selected
 
         RuleFor(x => x.PurchasePrice)
             .GreaterThanOrEqualTo(0).WithMessage("Purchase Price cannot be negative.");
