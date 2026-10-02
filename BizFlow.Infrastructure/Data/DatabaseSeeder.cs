@@ -1,6 +1,7 @@
 using BizFlow.Application.Common.Interfaces;
 using BizFlow.Domain.Constants;
 using BizFlow.Domain.Entities;
+using BizFlow.Domain.Entities.ClothHub;
 using BizFlow.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -60,6 +61,34 @@ public class DatabaseSeeder : IDatabaseSeeder
 
             // Reload all permissions
             var allPermissions = await _context.Permissions.ToListAsync(cancellationToken);
+
+            // Ensure all existing BusinessAdmin roles have all permissions (including ClothHub permissions)
+            var businessAdminRoles = await _context.Roles
+                .IgnoreQueryFilters()
+                .Where(r => r.Name == "BusinessAdmin")
+                .ToListAsync(cancellationToken);
+
+            foreach (var role in businessAdminRoles)
+            {
+                var rolePermIds = await _context.RolePermissions
+                    .Where(rp => rp.RoleId == role.Id)
+                    .Select(rp => rp.PermissionId)
+                    .ToListAsync(cancellationToken);
+
+                var missingPerms = allPermissions.Where(p => !rolePermIds.Contains(p.Id)).ToList();
+                if (missingPerms.Count > 0)
+                {
+                    foreach (var missing in missingPerms)
+                    {
+                        _context.RolePermissions.Add(new RolePermission
+                        {
+                            RoleId = role.Id,
+                            PermissionId = missing.Id
+                        });
+                    }
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+            }
 
             // 2. Seed SuperAdmin Role & SuperAdmin User
             var superAdminRole = await _context.Roles
@@ -768,12 +797,179 @@ public class DatabaseSeeder : IDatabaseSeeder
 
                 await _context.SaveChangesAsync(cancellationToken);
                 _logger.LogInformation("Seeded Demo Tenant: Acme Global Ltd (ACME-01) with inventory, sales, procurement, and accounting ledger.");
+
+                // Seed Cloth Hub Retail Masters & Catalog for Demo Business
+                var hasClothData = await _context.ClothSizes
+                    .IgnoreQueryFilters()
+                    .AnyAsync(s => s.BusinessId == demoBusiness.Id, cancellationToken);
+
+                if (!hasClothData)
+                {
+                    await SeedClothHubDefaultsAsync(demoBusiness.Id, cancellationToken);
+                }
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while seeding database.");
             throw;
+        }
+    }
+
+    private async Task SeedClothHubDefaultsAsync(Guid businessId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _logger.LogInformation("Seeding default Cloth Hub retail masters & catalog for business: {BusinessId}", businessId);
+
+            // 1. Standard Sizes
+            var sizes = new List<ClothSize>
+            {
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "S", Code = "S", CategoryType = "Standard", SortOrder = 1, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "M", Code = "M", CategoryType = "Standard", SortOrder = 2, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "L", Code = "L", CategoryType = "Standard", SortOrder = 3, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "XL", Code = "XL", CategoryType = "Standard", SortOrder = 4, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "XXL", Code = "XXL", CategoryType = "Standard", SortOrder = 5, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "30", Code = "30", CategoryType = "Waist", SortOrder = 6, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "32", Code = "32", CategoryType = "Waist", SortOrder = 7, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "34", Code = "34", CategoryType = "Waist", SortOrder = 8, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "36", Code = "36", CategoryType = "Waist", SortOrder = 9, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Free Size", Code = "FS", CategoryType = "FreeSize", SortOrder = 10, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" }
+            };
+            _context.ClothSizes.AddRange(sizes);
+
+            // 2. Standard Colours
+            var colours = new List<ClothColour>
+            {
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Jet Black", HexCode = "#111111", PaletteGroup = "Dark", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Crisp White", HexCode = "#FFFFFF", PaletteGroup = "Light", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Navy Blue", HexCode = "#001F3F", PaletteGroup = "Dark", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Olive Green", HexCode = "#3D9970", PaletteGroup = "Primary", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Wine Red", HexCode = "#85144B", PaletteGroup = "Dark", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Sky Blue", HexCode = "#7FDBFF", PaletteGroup = "Pastel", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Heather Grey", HexCode = "#AAAAAA", PaletteGroup = "Light", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" }
+            };
+            _context.ClothColours.AddRange(colours);
+
+            // 3. Brands
+            var brandRaymond = new ClothBrand { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Raymond", Code = "RAY", Description = "Premium formal menswear & fabrics", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            var brandPeter = new ClothBrand { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Peter England", Code = "PE", Description = "Trusted formal and casual workwear", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            var brandLevis = new ClothBrand { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Levi's", Code = "LEV", Description = "Authentic denim jeans & casual wear", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            var brandZara = new ClothBrand { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Zara Man", Code = "ZR", Description = "Contemporary fashion apparel", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            _context.ClothBrands.AddRange(brandRaymond, brandPeter, brandLevis, brandZara);
+
+            // 4. Categories
+            var catShirts = new ClothCategory { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Men's Formal Shirts", Code = "MSHRT", Gender = "Men's", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            var catJeans = new ClothCategory { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Men's Denim Jeans", Code = "MJN", Gender = "Men's", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            var catKurtis = new ClothCategory { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Women's Kurtis", Code = "WKT", Gender = "Women's", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            var catTshirts = new ClothCategory { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Casual T-Shirts & Polos", Code = "TSH", Gender = "Unisex", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            _context.ClothCategories.AddRange(catShirts, catJeans, catKurtis, catTshirts);
+
+            // 5. Fabrics & Designs
+            var fabricCotton = new ClothFabric { Id = Guid.NewGuid(), BusinessId = businessId, Name = "100% Combed Cotton", Composition = "100% Cotton", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            var fabricLinen = new ClothFabric { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Linen Blend", Composition = "70% Linen, 30% Cotton", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            var fabricDenim = new ClothFabric { Id = Guid.NewGuid(), BusinessId = businessId, Name = "Stretch Denim", Composition = "98% Cotton, 2% Elastane", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            _context.ClothFabrics.AddRange(fabricCotton, fabricLinen, fabricDenim);
+
+            var designSolid = new ClothDesign { Id = Guid.NewGuid(), BusinessId = businessId, DesignNumber = "DS-SOLID-01", Pattern = "Plain", Fit = "Regular", Season = "All Season", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            var designCheck = new ClothDesign { Id = Guid.NewGuid(), BusinessId = businessId, DesignNumber = "DS-CHECK-02", Pattern = "Checked", Fit = "Slim Fit", Season = "Autumn", CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" };
+            _context.ClothDesigns.AddRange(designSolid, designCheck);
+
+            // 6. Sample Product & Variants
+            var sampleShirt = new ClothProduct
+            {
+                Id = Guid.NewGuid(),
+                BusinessId = businessId,
+                Name = "Raymond Oxford Formal Shirt",
+                SkuPrefix = "RAY-OXF",
+                Description = "Premium 100% combed cotton formal shirt with tailored fit and button-down collar.",
+                BrandId = brandRaymond.Id,
+                CategoryId = catShirts.Id,
+                FabricId = fabricCotton.Id,
+                DesignNumber = "DS-SOLID-01",
+                Gender = "Men's",
+                HsnCode = "6109",
+                GstRate = 5.0m,
+                UnitOfMeasurement = "PCS",
+                BaseMrp = 1999m,
+                BasePurchasePrice = 850m,
+                BaseSellingPrice = 1499m,
+                MinStockLevel = 10,
+                IsActive = true,
+                CreatedOn = _dateTimeProvider.UtcNow,
+                CreatedBy = "System"
+            };
+            _context.ClothProducts.Add(sampleShirt);
+
+            var sizeS = sizes.First(s => s.Name == "S");
+            var sizeM = sizes.First(s => s.Name == "M");
+            var sizeL = sizes.First(s => s.Name == "L");
+            var sizeXL = sizes.First(s => s.Name == "XL");
+
+            var colNavy = colours.First(c => c.Name == "Navy Blue");
+            var colWhite = colours.First(c => c.Name == "Crisp White");
+            var colBlack = colours.First(c => c.Name == "Jet Black");
+
+            var variants = new List<ClothProductVariant>
+            {
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, ClothProductId = sampleShirt.Id, SizeId = sizeS.Id, ColourId = colNavy.Id, Sku = "RAY-OXF-NAVY-S", Barcode = "890123400001", Mrp = 1999m, PurchasePrice = 850m, SellingPrice = 1499m, CurrentStock = 18, MinStockLevel = 5, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, ClothProductId = sampleShirt.Id, SizeId = sizeM.Id, ColourId = colNavy.Id, Sku = "RAY-OXF-NAVY-M", Barcode = "890123400002", Mrp = 1999m, PurchasePrice = 850m, SellingPrice = 1499m, CurrentStock = 32, MinStockLevel = 5, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, ClothProductId = sampleShirt.Id, SizeId = sizeL.Id, ColourId = colNavy.Id, Sku = "RAY-OXF-NAVY-L", Barcode = "890123400003", Mrp = 1999m, PurchasePrice = 850m, SellingPrice = 1499m, CurrentStock = 24, MinStockLevel = 5, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, ClothProductId = sampleShirt.Id, SizeId = sizeXL.Id, ColourId = colNavy.Id, Sku = "RAY-OXF-NAVY-XL", Barcode = "890123400004", Mrp = 1999m, PurchasePrice = 850m, SellingPrice = 1499m, CurrentStock = 14, MinStockLevel = 5, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, ClothProductId = sampleShirt.Id, SizeId = sizeM.Id, ColourId = colWhite.Id, Sku = "RAY-OXF-WHT-M", Barcode = "890123400005", Mrp = 1999m, PurchasePrice = 850m, SellingPrice = 1499m, CurrentStock = 28, MinStockLevel = 5, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, ClothProductId = sampleShirt.Id, SizeId = sizeL.Id, ColourId = colWhite.Id, Sku = "RAY-OXF-WHT-L", Barcode = "890123400006", Mrp = 1999m, PurchasePrice = 850m, SellingPrice = 1499m, CurrentStock = 22, MinStockLevel = 5, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" },
+                new() { Id = Guid.NewGuid(), BusinessId = businessId, ClothProductId = sampleShirt.Id, SizeId = sizeM.Id, ColourId = colBlack.Id, Sku = "RAY-OXF-BLK-M", Barcode = "890123400007", Mrp = 1999m, PurchasePrice = 850m, SellingPrice = 1499m, CurrentStock = 20, MinStockLevel = 5, CreatedOn = _dateTimeProvider.UtcNow, CreatedBy = "System" }
+            };
+            _context.ClothProductVariants.AddRange(variants);
+
+            // 7. Sample Supplier & Customer
+            var supplier = new ClothSupplier
+            {
+                Id = Guid.NewGuid(),
+                BusinessId = businessId,
+                SupplierName = "Raymond Apparel Mills & Distributors",
+                ContactPerson = "Vikram Singhania",
+                Phone = "+919811223344",
+                Email = "orders@raymondapparel.in",
+                Gstin = "27AAACR1234M1Z8",
+                Address = "Plot 12, Textile SEZ, Bhiwandi",
+                City = "Mumbai",
+                State = "Maharashtra",
+                Pincode = "421302",
+                PaymentTerms = "Net 30 Days",
+                CreditLimit = 500000m,
+                CurrentPayableBalance = 42500m,
+                IsActive = true,
+                CreatedOn = _dateTimeProvider.UtcNow,
+                CreatedBy = "System"
+            };
+            _context.ClothSuppliers.Add(supplier);
+
+            var customer = new ClothCustomer
+            {
+                Id = Guid.NewGuid(),
+                BusinessId = businessId,
+                CustomerName = "Rahul Sharma",
+                Phone = "+919876543210",
+                Email = "rahul.sharma@gmail.com",
+                Address = "Flat 402, Green Heights, Andheri West",
+                City = "Mumbai",
+                CreditLimit = 10000m,
+                CurrentOutstanding = 0m,
+                TotalSpentAmount = 8990m,
+                TotalVisitsCount = 4,
+                IsActive = true,
+                CreatedOn = _dateTimeProvider.UtcNow,
+                CreatedBy = "System"
+            };
+            _context.ClothCustomers.Add(customer);
+
+            await _context.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Successfully seeded Cloth Hub retail demo catalog (Raymond shirts, sizes, colours, variants).");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error seeding default Cloth Hub data.");
         }
     }
 }
