@@ -128,7 +128,7 @@ public class ClothAnalyticsService : IClothAnalyticsService
             var rev = group.Sum(x => x.LineTotal);
 
             // Cost price: If cost price is 0, estimate cost at 55% of selling price (standard apparel retail markup)
-            var unitCost = variant?.CostPrice > 0 ? variant.CostPrice : (variant?.SellingPrice > 0 ? variant.SellingPrice * 0.55m : 250);
+            var unitCost = variant?.PurchasePrice > 0 ? variant.PurchasePrice : (variant?.SellingPrice > 0 ? variant.SellingPrice * 0.55m : 250);
             var cogs = unitCost * qty;
             var grossProfit = rev - cogs;
             var marginPct = rev > 0 ? Math.Round((grossProfit / rev) * 100, 1) : 0;
@@ -139,9 +139,9 @@ public class ClothAnalyticsService : IClothAnalyticsService
             itemProfits.Add(new ClothProfitMarginItemDto
             {
                 VariantId = group.Key,
-                ProductName = product?.ProductName ?? first.ItemDescription,
-                BrandName = product?.Brand?.BrandName ?? "Generic",
-                CategoryName = product?.Category?.CategoryName ?? "Apparel",
+                ProductName = product?.Name ?? first.ItemDescription,
+                BrandName = product?.Brand?.Name ?? "Generic",
+                CategoryName = product?.Category?.Name ?? "Apparel",
                 Sku = first.Sku,
                 SizeName = first.SizeName,
                 ColourName = first.ColourName,

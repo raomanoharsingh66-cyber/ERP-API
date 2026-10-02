@@ -150,11 +150,11 @@ public class ClothSalesReturnService : IClothSalesReturnService
                 ClothSalesReturnId = salesReturn.Id,
                 ItemAction = "Return",
                 ClothProductVariantId = variant.Id,
-                ItemDescription = $"{variant.Product?.ProductName ?? "Garment"} ({variant.Size?.SizeName} / {variant.Colour?.ColourName})",
+                ItemDescription = $"{variant.Product?.Name ?? "Garment"} ({variant.Size?.Name} / {variant.Colour?.Name})",
                 Sku = variant.Sku,
                 Barcode = variant.Barcode,
-                SizeName = variant.Size?.SizeName ?? string.Empty,
-                ColourName = variant.Colour?.ColourName ?? string.Empty,
+                SizeName = variant.Size?.Name ?? string.Empty,
+                ColourName = variant.Colour?.Name ?? string.Empty,
                 Quantity = retItem.Quantity,
                 UnitPrice = unitPrice,
                 LineTotal = lineTotal,
@@ -171,8 +171,9 @@ public class ClothSalesReturnService : IClothSalesReturnService
                     BusinessId = businessId,
                     ClothProductVariantId = variant.Id,
                     TransactionType = "SalesReturn",
-                    QuantityChanged = retItem.Quantity,
-                    BalanceAfter = variant.CurrentStock,
+                    QuantityIn = retItem.Quantity,
+                    QuantityOut = 0,
+                    RunningBalance = variant.CurrentStock,
                     ReferenceNumber = returnNumber,
                     TransactionDate = today,
                     Notes = $"Customer return (Reason: {dto.Reason}). Invoice: {dto.OriginalInvoiceNumber ?? "N/A"}"
@@ -186,8 +187,9 @@ public class ClothSalesReturnService : IClothSalesReturnService
                     BusinessId = businessId,
                     ClothProductVariantId = variant.Id,
                     TransactionType = "DamagedReturnQuarantine",
-                    QuantityChanged = 0,
-                    BalanceAfter = variant.CurrentStock,
+                    QuantityIn = 0,
+                    QuantityOut = 0,
+                    RunningBalance = variant.CurrentStock,
                     ReferenceNumber = returnNumber,
                     TransactionDate = today,
                     Notes = $"Damaged garment returned by customer (Quarantined, not added to active showroom stock)."
@@ -212,7 +214,7 @@ public class ClothSalesReturnService : IClothSalesReturnService
                 if (variant.CurrentStock < excItem.Quantity)
                 {
                     throw new InvalidOperationException(
-                        $"Insufficient showroom stock for replacement garment {variant.Product?.ProductName} ({variant.Size?.SizeName}/{variant.Colour?.ColourName}). Available: {variant.CurrentStock} pcs.");
+                        $"Insufficient showroom stock for replacement garment {variant.Product?.Name} ({variant.Size?.Name}/{variant.Colour?.Name}). Available: {variant.CurrentStock} pcs.");
                 }
 
                 var unitPrice = excItem.UnitPrice > 0 ? excItem.UnitPrice : variant.SellingPrice;
@@ -227,11 +229,11 @@ public class ClothSalesReturnService : IClothSalesReturnService
                     ClothSalesReturnId = salesReturn.Id,
                     ItemAction = "Replacement",
                     ClothProductVariantId = variant.Id,
-                    ItemDescription = $"{variant.Product?.ProductName ?? "Garment"} ({variant.Size?.SizeName} / {variant.Colour?.ColourName})",
+                    ItemDescription = $"{variant.Product?.Name ?? "Garment"} ({variant.Size?.Name} / {variant.Colour?.Name})",
                     Sku = variant.Sku,
                     Barcode = variant.Barcode,
-                    SizeName = variant.Size?.SizeName ?? string.Empty,
-                    ColourName = variant.Colour?.ColourName ?? string.Empty,
+                    SizeName = variant.Size?.Name ?? string.Empty,
+                    ColourName = variant.Colour?.Name ?? string.Empty,
                     Quantity = excItem.Quantity,
                     UnitPrice = unitPrice,
                     LineTotal = lineTotal,
@@ -244,8 +246,9 @@ public class ClothSalesReturnService : IClothSalesReturnService
                     BusinessId = businessId,
                     ClothProductVariantId = variant.Id,
                     TransactionType = "SalesExchange",
-                    QuantityChanged = -excItem.Quantity,
-                    BalanceAfter = variant.CurrentStock,
+                    QuantityIn = 0,
+                    QuantityOut = excItem.Quantity,
+                    RunningBalance = variant.CurrentStock,
                     ReferenceNumber = returnNumber,
                     TransactionDate = today,
                     Notes = $"Replacement item issued on exchange {returnNumber}"
