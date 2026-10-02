@@ -55,6 +55,14 @@ public static class DependencyInjection
         // AI Smart Purchase Assistant
         services.AddScoped<IAiAssistantService, AiAssistantService>();
 
+        // AI Guided Support & Troubleshooting Assistant
+        services.AddScoped<IAiKnowledgeService, BizFlow.Infrastructure.Services.AiSupport.AiKnowledgeService>();
+        services.AddScoped<IAiWorkflowService, BizFlow.Infrastructure.Services.AiSupport.AiWorkflowService>();
+        services.AddScoped<IAiTroubleshootingService, BizFlow.Infrastructure.Services.AiSupport.AiTroubleshootingService>();
+        services.AddScoped<IAiAuditService, BizFlow.Infrastructure.Services.AiSupport.AiAuditService>();
+        services.AddScoped<IAiActionService, BizFlow.Infrastructure.Services.AiSupport.AiActionService>();
+        services.AddScoped<IAiSupportService, BizFlow.Infrastructure.Services.AiSupport.AiSupportService>();
+
         return services;
     }
 }
