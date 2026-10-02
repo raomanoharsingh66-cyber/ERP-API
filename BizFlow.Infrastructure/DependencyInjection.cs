@@ -17,7 +17,10 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString, b =>
-                b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+            {
+                b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                b.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
+            }));
 
         services.AddScoped<IApplicationDbContext>(provider => 
             provider.GetRequiredService<ApplicationDbContext>());

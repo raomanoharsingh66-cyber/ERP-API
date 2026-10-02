@@ -99,6 +99,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
+        // Default decimal precision convention across all entities (avoids EF warnings & silent truncation)
+        foreach (var property in modelBuilder.Model.GetEntityTypes()
+            .SelectMany(t => t.GetProperties())
+            .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
+        {
+            if (property.GetColumnType() == null)
+            {
+                property.SetColumnType("decimal(18,2)");
+            }
+        }
+
         // Global Query Filters for Soft-Delete & Tenant Isolation
         modelBuilder.Entity<Business>().HasQueryFilter(b => !b.IsDeleted);
 
