@@ -46,6 +46,38 @@ public interface IApplicationDbContext
     DbSet<JournalEntry> JournalEntries { get; }
     DbSet<JournalEntryLine> JournalEntryLines { get; }
 
+    // Cloth Hub Masters & Products
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothBrand> ClothBrands { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothCategory> ClothCategories { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothSize> ClothSizes { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothColour> ClothColours { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothDesign> ClothDesigns { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothFabric> ClothFabrics { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothProduct> ClothProducts { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothProductVariant> ClothProductVariants { get; }
+
+    // Cloth Hub Phase 3: Inventory & Box/Pack Assortments
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothBoxPack> ClothBoxPacks { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothBoxPackItem> ClothBoxPackItems { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothStockAdjustment> ClothStockAdjustments { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothStockAdjustmentItem> ClothStockAdjustmentItems { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothStockLedger> ClothStockLedgers { get; }
+
+    // Cloth Hub Phase 4: Apparel Procurement & Supplier Payables
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothSupplier> ClothSuppliers { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothPurchaseBill> ClothPurchaseBills { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothPurchaseBillItem> ClothPurchaseBillItems { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothPurchaseReturn> ClothPurchaseReturns { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothPurchaseReturnItem> ClothPurchaseReturnItems { get; }
+
+    // Cloth Hub Phase 5, 6 & 7: Sales, Returns, Customers & Expenses
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothSalesInvoice> ClothSalesInvoices { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothSalesInvoiceItem> ClothSalesInvoiceItems { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothSalesReturn> ClothSalesReturns { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothSalesReturnItem> ClothSalesReturnItems { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothCustomer> ClothCustomers { get; }
+    DbSet<BizFlow.Domain.Entities.ClothHub.ClothExpense> ClothExpenses { get; }
+
     DatabaseFacade Database { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

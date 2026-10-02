@@ -2,6 +2,7 @@ using System.Reflection;
 using BizFlow.Application.Common.Interfaces;
 using BizFlow.Domain.Common;
 using BizFlow.Domain.Entities;
+using BizFlow.Domain.Entities.ClothHub;
 using Microsoft.EntityFrameworkCore;
 
 namespace BizFlow.Infrastructure.Data;
@@ -60,6 +61,38 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
     public DbSet<JournalEntryLine> JournalEntryLines => Set<JournalEntryLine>();
+
+    // Cloth Hub Retail Masters & Product Entities
+    public DbSet<ClothBrand> ClothBrands => Set<ClothBrand>();
+    public DbSet<ClothCategory> ClothCategories => Set<ClothCategory>();
+    public DbSet<ClothSize> ClothSizes => Set<ClothSize>();
+    public DbSet<ClothColour> ClothColours => Set<ClothColour>();
+    public DbSet<ClothDesign> ClothDesigns => Set<ClothDesign>();
+    public DbSet<ClothFabric> ClothFabrics => Set<ClothFabric>();
+    public DbSet<ClothProduct> ClothProducts => Set<ClothProduct>();
+    public DbSet<ClothProductVariant> ClothProductVariants => Set<ClothProductVariant>();
+
+    // Cloth Hub Phase 3: Inventory & Box/Pack Assortments
+    public DbSet<ClothBoxPack> ClothBoxPacks => Set<ClothBoxPack>();
+    public DbSet<ClothBoxPackItem> ClothBoxPackItems => Set<ClothBoxPackItem>();
+    public DbSet<ClothStockAdjustment> ClothStockAdjustments => Set<ClothStockAdjustment>();
+    public DbSet<ClothStockAdjustmentItem> ClothStockAdjustmentItems => Set<ClothStockAdjustmentItem>();
+    public DbSet<ClothStockLedger> ClothStockLedgers => Set<ClothStockLedger>();
+
+    // Cloth Hub Phase 4: Apparel Procurement & Supplier Payables
+    public DbSet<ClothSupplier> ClothSuppliers => Set<ClothSupplier>();
+    public DbSet<ClothPurchaseBill> ClothPurchaseBills => Set<ClothPurchaseBill>();
+    public DbSet<ClothPurchaseBillItem> ClothPurchaseBillItems => Set<ClothPurchaseBillItem>();
+    public DbSet<ClothPurchaseReturn> ClothPurchaseReturns => Set<ClothPurchaseReturn>();
+    public DbSet<ClothPurchaseReturnItem> ClothPurchaseReturnItems => Set<ClothPurchaseReturnItem>();
+
+    // Cloth Hub Phase 5, 6 & 7: Retail POS Sales, Invoices, Returns, Customers & Expenses
+    public DbSet<ClothSalesInvoice> ClothSalesInvoices => Set<ClothSalesInvoice>();
+    public DbSet<ClothSalesInvoiceItem> ClothSalesInvoiceItems => Set<ClothSalesInvoiceItem>();
+    public DbSet<ClothSalesReturn> ClothSalesReturns => Set<ClothSalesReturn>();
+    public DbSet<ClothSalesReturnItem> ClothSalesReturnItems => Set<ClothSalesReturnItem>();
+    public DbSet<ClothCustomer> ClothCustomers => Set<ClothCustomer>();
+    public DbSet<ClothExpense> ClothExpenses => Set<ClothExpense>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -159,6 +192,96 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || je.BusinessId == _currentUserService.BusinessId));
 
         modelBuilder.Entity<JournalEntryLine>().HasQueryFilter(i => !i.IsDeleted);
+
+        // Cloth Hub Retail Query Filters (Tenant Isolation & Soft Delete)
+        modelBuilder.Entity<ClothBrand>().HasQueryFilter(b => 
+            !b.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || b.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothCategory>().HasQueryFilter(c => 
+            !c.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || c.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothSize>().HasQueryFilter(s => 
+            !s.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || s.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothColour>().HasQueryFilter(c => 
+            !c.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || c.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothDesign>().HasQueryFilter(d => 
+            !d.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || d.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothFabric>().HasQueryFilter(f => 
+            !f.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || f.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothProduct>().HasQueryFilter(p => 
+            !p.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || p.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothProductVariant>().HasQueryFilter(v => 
+            !v.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || v.BusinessId == _currentUserService.BusinessId));
+
+        // Cloth Hub Inventory Filters
+        modelBuilder.Entity<ClothBoxPack>().HasQueryFilter(bp => 
+            !bp.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || bp.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothBoxPackItem>().HasQueryFilter(i => !i.IsDeleted);
+
+        modelBuilder.Entity<ClothStockAdjustment>().HasQueryFilter(sa => 
+            !sa.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || sa.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothStockAdjustmentItem>().HasQueryFilter(i => !i.IsDeleted);
+
+        modelBuilder.Entity<ClothStockLedger>().HasQueryFilter(sl => 
+            !sl.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || sl.BusinessId == _currentUserService.BusinessId));
+
+        // Cloth Hub Phase 4 Purchase Filters
+        modelBuilder.Entity<ClothSupplier>().HasQueryFilter(s => 
+            !s.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || s.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothPurchaseBill>().HasQueryFilter(pb => 
+            !pb.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || pb.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothPurchaseBillItem>().HasQueryFilter(i => !i.IsDeleted);
+
+        modelBuilder.Entity<ClothPurchaseReturn>().HasQueryFilter(pr => 
+            !pr.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || pr.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothPurchaseReturnItem>().HasQueryFilter(i => !i.IsDeleted);
+
+        // Cloth Hub Phase 5 Sales Filters
+        modelBuilder.Entity<ClothSalesInvoice>().HasQueryFilter(si => 
+            !si.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || si.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothSalesInvoiceItem>().HasQueryFilter(i => !i.IsDeleted);
+
+        // Cloth Hub Phase 6 Exchanges & Returns Filters
+        modelBuilder.Entity<ClothSalesReturn>().HasQueryFilter(sr => 
+            !sr.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || sr.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothSalesReturnItem>().HasQueryFilter(i => !i.IsDeleted);
+
+        // Cloth Hub Phase 7 Customer & Expense Filters
+        modelBuilder.Entity<ClothCustomer>().HasQueryFilter(c => 
+            !c.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || c.BusinessId == _currentUserService.BusinessId));
+
+        modelBuilder.Entity<ClothExpense>().HasQueryFilter(e => 
+            !e.IsDeleted && 
+            (_currentUserService.IsSuperAdmin || _currentUserService.BusinessId == null || e.BusinessId == _currentUserService.BusinessId));
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -63,6 +63,17 @@ public static class DependencyInjection
         services.AddScoped<IAiActionService, BizFlow.Infrastructure.Services.AiSupport.AiActionService>();
         services.AddScoped<IAiSupportService, BizFlow.Infrastructure.Services.AiSupport.AiSupportService>();
 
+        // Cloth Hub Retail Module Services
+        services.AddScoped<IClothMasterService, BizFlow.Infrastructure.Services.ClothHub.ClothMasterService>();
+        services.AddScoped<IClothProductService, BizFlow.Infrastructure.Services.ClothHub.ClothProductService>();
+        services.AddScoped<IClothInventoryService, BizFlow.Infrastructure.Services.ClothHub.ClothInventoryService>();
+        services.AddScoped<IClothPurchaseService, BizFlow.Infrastructure.Services.ClothHub.ClothPurchaseService>();
+        services.AddScoped<IClothSalesService, BizFlow.Infrastructure.Services.ClothHub.ClothSalesService>();
+        services.AddScoped<IClothSalesReturnService, BizFlow.Infrastructure.Services.ClothHub.ClothSalesReturnService>();
+        services.AddScoped<IClothAnalyticsService, BizFlow.Infrastructure.Services.ClothHub.ClothAnalyticsService>();
+        services.AddScoped<IClothCustomerService, BizFlow.Infrastructure.Services.ClothHub.ClothCustomerService>();
+        services.AddScoped<IClothExpenseService, BizFlow.Infrastructure.Services.ClothHub.ClothExpenseService>();
+
         return services;
     }
 }

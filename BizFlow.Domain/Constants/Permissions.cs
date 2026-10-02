@@ -73,6 +73,15 @@ public static class Permissions
         public const string Reports = "Accounting.Reports";
     }
 
+    public static class ClothHub
+    {
+        public const string View = "ClothHub.View";
+        public const string PosBilling = "ClothHub.PosBilling";
+        public const string Returns = "ClothHub.Returns";
+        public const string Inventory = "ClothHub.Inventory";
+        public const string Reports = "ClothHub.Reports";
+    }
+
     public record PermissionDefinition(string Code, string Module, string Description);
 
     public static IReadOnlyList<PermissionDefinition> GetAll()
@@ -128,7 +137,14 @@ public static class Permissions
             // Accounting
             new(Accounting.View, "Accounting", "View general ledger, journal vouchers, and charts of accounts"),
             new(Accounting.CreateEntry, "Accounting", "Record journal vouchers and ledger entries"),
-            new(Accounting.Reports, "Accounting", "Generate balance sheet, profit & loss, and trial balance reports")
+            new(Accounting.Reports, "Accounting", "Generate balance sheet, profit & loss, and trial balance reports"),
+
+            // Cloth Hub Retail Permissions
+            new(ClothHub.View, "Cloth Hub", "Access Cloth Hub clothing retail management module"),
+            new(ClothHub.PosBilling, "Cloth Hub", "Operate POS fast billing terminal and print receipts"),
+            new(ClothHub.Returns, "Cloth Hub", "Process garment size/colour exchanges and returns"),
+            new(ClothHub.Inventory, "Cloth Hub", "Manage 2D size-colour stock matrix and carton packs"),
+            new(ClothHub.Reports, "Cloth Hub", "View retail sales, profit margins, and apparel GST reports")
         };
     }
 }
